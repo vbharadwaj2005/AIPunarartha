@@ -1,0 +1,47 @@
+{
+  "_comment": "Determines the allowed recovery action(s) for each classification bucket and defines stopping rules. The decision engine reads this config - it never makes its own judgment. max_retries caps retry-link attempts for the bucket; max_retries_global caps retry-links across all buckets for the same order. cooldown_hours pauses any further contact after the order's last attempt; retry_delay_hours additionally waits before repeating the same bucket.",
+  "buckets": {
+    "insufficient_funds": {
+      "preferred_action": "retry_link",
+      "fallback_action": "reminder",
+      "retry_delay_hours": 24,
+      "max_retries": 2
+    },
+    "card_expired": {
+      "preferred_action": "reminder",
+      "fallback_action": "escalate",
+      "retry_delay_hours": 0,
+      "max_retries": 0
+    },
+    "bank_timeout": {
+      "preferred_action": "retry_link",
+      "fallback_action": "reminder",
+      "retry_delay_hours": 2,
+      "max_retries": 3
+    },
+    "3ds_failed": {
+      "preferred_action": "reminder",
+      "fallback_action": "escalate",
+      "retry_delay_hours": 4,
+      "max_retries": 1
+    },
+    "generic_decline": {
+      "preferred_action": "reminder",
+      "fallback_action": "escalate",
+      "retry_delay_hours": 0,
+      "max_retries": 0
+    },
+    "ambiguous": {
+      "preferred_action": "reminder",
+      "fallback_action": "escalate",
+      "retry_delay_hours": 0,
+      "max_retries": 0
+    }
+  },
+  "stopping_rules": {
+    "max_retries_global": 3,
+    "cooldown_hours": 24,
+    "opted_out_flag": true,
+    "min_amount_threshold_inr": 10.0
+  }
+}

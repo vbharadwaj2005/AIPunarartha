@@ -1,173 +1,91 @@
 # AIPunarartha
 
-An AI agent that detects revenue at risk from failed payments, classifies why each failure happened, picks the right bounded recovery action, executes it, and logs every single decision to an auditable trail.
+**Wealth regained** — a small system that watches failed payments, works out *why* each one failed, and decides a safe, explainable recovery action for it. Built around the "revenue recovery" track of an Indian fintech payments hackathon.
+
+**Quickstart:** double-click `start.bat` on Windows (or follow the steps below). The app runs fully even when `.env` has no API keys.
 
 ---
 
-## Problem
+## Setup & running
 
-Payment failures silently bleed merchant revenue. A card declines, a bank times out, a 3DS check fails — and the money is just gone. Recovery today is either "do nothing" or unstructured manual follow-up. There's no system watching, deciding, and acting in a bounded, auditable way. Payment gateways move money at the point of sale but don't send reminders, track failures, or manage dunning. That gap is what AIPunarartha fills.
-
----
-
-## How It Works
-
-```
-[Synthetic Batch + Gateway Webhooks] ──> [PaymentEvent table]
-                                                  │
-                                                  ▼
-                                        ┌─ Classifier ─┐
-                                        │              │
-                              known decline code    free-text / unclear
-                              → rule lookup            |
-                                        │              │
-                                        └──────┬───────┘
-                                               ▼
-                                     [Decision Engine]
-                                     (deterministic, no LLM)
-                                               │
-                              ┌────────────────┼────────────────┐
-                              │                │                │
-                         retry_link        reminder         escalate
-                              │                │                │
-                              ▼                ▼                ▼
-                            Payment        AI drafts       logged as
-                    Links API (real)    EN + Hinglish     exception /
-                                              │           manual review
-                                              ▼
-                                        [AuditLog]
-                                  every step, every actor,
-                                  every reasoning string
-```
-
----
-
-## What's Deterministic vs. What's AI
-
-This is the core design rule — non-negotiable:
-
-| Component | Who decides | Why |
-|---|---|---|
-| **Classification** (known decline codes) | Rules engine (`decline_rules.json`) | Deterministic, inspectable, zero cost |
-| **Classification** (ambiguous/free-text) | Indic-language LLM | Only when rules can't match — Hindi/Hinglish input needs LLM understanding |
-| **Recovery action** (what to do) | Rules engine (`action_rules.json`) | Deterministic. Never offloaded to the LLM. |
-| **Recovery message** (what to say) | Indic-language LLM | Needs natural language, Indic-language fluency — this is where it genuinely shines |
-
-The LLM never chooses the action. It feeds structured output (bucket + confidence) into the rules engine, which makes the decision. This is what makes every recovery action explainable and audited.
-
----
-
-## Tech Stack
-
-| Layer | Choice |
-|---|---|
-| Backend + pipeline + API | Python, FastAPI, Uvicorn |
-| ORM + DB | SQLModel + SQLite (file-based, zero setup) |
-| Dashboard | Streamlit (read-only, talks to FastAPI over REST) |
-| Payments | Payment gateway test mode — Orders, Payments, Payment Links, Webhooks |
-| LLM / AI | Indic-language LLM — classification fallback + Hinglish message drafting |
-| Tunneling | ngrok (receives gateway webhooks locally) |
-| Data generation | `faker` (Python) |
-
-**Why an Indic-language LLM?** Hindi, Hinglish, and code-mixed Indic text need native fluency. Recovery messages need to feel natural to an Indian customer — not like a translated template. An LLM trained on Indic data does this natively; generic Western LLMs don't.
-
-**Why two processes (FastAPI + Streamlit)?** Streamlit reruns its script on every interaction and can't run a persistent webhook server. FastAPI owns the pipeline. Streamlit is a thin dashboard on top. You can develop and test the pipeline entirely via `curl` without touching the UI.
-
----
-
-## Setup
-
-### Prerequisites
-
-- Python 3.13+ (or whatever `uv` gives you)
-- Payment gateway test-mode API keys
-- Indic-language LLM API key
-- ngrok (for webhook tunneling)
-
-### Install
+**Prerequisites:** Python 3.13+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-# clone and enter
-git clone <repo-url> && cd aipunarartha
-
-# create venv with uv (downloads Python automatically)
+# 1. create the virtual environment (uv downloads Python automatically)
 uv venv --python 3.13
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Mac/Linux
 
-# install deps
-uv pip install -r backend\requirements.txt
+# 2. install dependencies
+uv pip install -r requirements.txt
+
+# 3. environment file (keys are optional - the app runs keyless)
+cp .env.example .env
 ```
 
-### Configure
+`.env` stays git-ignored. The important values:
+
+| Key | Meaning |
+| :--- | :--- |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay gateway (test mode). Leave empty for sandbox mode |
+| `RAZORPAY_WEBHOOK_SECRET` | signs webhook payloads; if set, unsigned calls are rejected |
+| `SARVAM_API_KEY` | Sarvam AI model key. Leave empty for template fallbacks |
+| `AUTO_EXECUTE` | `true` = act automatically, `false` = human approval queue |
+| `SIMULATION_SEED` | makes outcome simulation reproducible |
+
+**Run it** — from the repo root:
 
 ```bash
-cp backend\.env.example backend\.env
-# fill in your payment gateway + LLM API keys
-```
+# 1. generate a synthetic batch of failure events
+python -m core.scripts.generate_synthetic_batch
 
-### Run
+# 2. classify -> decide -> execute over everything unprocessed
+python -m core.scripts.run_pipeline
 
-```bash
-# generate 55 synthetic payment events
-cd backend
-python -m app.scripts.generate_synthetic_batch
+# 3. simulate recovery outcomes (bounded, seeded)
+python -m core.scripts.simulate_outcomes
 
-# smoke test your API keys
-python -m app.scripts.smoke_test
+# 4. start the API
+python -m uvicorn core.main:app --reload --port 8000
 
-# run the full pipeline (classify -> decide -> execute)
-python -m app.scripts.run_pipeline
-
-# simulate recovery outcomes
-python -m app.scripts.simulate_outcomes
-
-# start the API server
-uvicorn app.main:app --reload --port 8000
-```
-
-In a second terminal:
-```bash
-cd dashboard
+# 5. in another terminal, start the dashboard
 streamlit run app.py
 ```
 
-Or just run `run_demo.bat` to start both.
+Or, on Windows, just double-click `start.bat` — it launches the API and the
+dashboard together. The dashboard reads the API at `http://localhost:8000`; the
+live webhook endpoint is `POST /api/events/webhook/razorpay` (test payloads can
+go to `POST /api/events/manual`).
 
 ---
 
-## Recovery Outcomes
+## How it works
 
-Recovery outcomes are **simulated** using bucket-conditioned probabilities based on industry data:
+1. A payment fails. We get the event via a **Razorpay** webhook (or a manual test payload).
+2. A **rule classifier** maps the gateway failure code to a bucket — `insufficient_funds`, `card_expired`, `bank_timeout`, `3ds_failed`, `generic_decline`. Anything the rules do not catch goes to the **Sarvam AI** model, which returns a bucket plus a confidence score.
+3. A **deterministic decision engine** turns bucket + history into one of `retry_link`, `reminder`, `escalate` or `no_action`. It never improvises — it reads versioned rule files and applies stopping rules (retry caps, a cooldown window, a minimum amount, and customer opt-out). Recovery payment links are created through **Razorpay** when keys are configured.
+4. If action is warranted, it either fires automatically (`AUTO_EXECUTE=true`) or lands in a **review queue** for a human to approve.
+5. Every step — ingest, classify, decide, act, outcome — is written to an audit log, so any decision can be traced back to the rule (or model output) that produced it.
 
-| Bucket | Assumed recovery rate | Basis |
-|---|---|---|
-| insufficient_funds | 60% | Industry: retries succeed after 24h when salary credits hit |
-| bank_timeout | 70% | Bank outages are transient, retry within 2h usually works |
-| 3ds_failed | 30% | Some customers retry and complete auth on second attempt |
-| card_expired | 5% | Card needs update — almost never self-resolves |
-| generic_decline | 15% | Vague declines, some resolve on retry |
-| ambiguous | 10% | Unknown root cause, low confidence |
+**Runs without API keys.** The default `.env` has no keys and everything still works:
 
-These are **not** measured production results. We state the assumption honestly. A real deployment would replace these with actual outcome data.
+- No Razorpay keys → keyless sandbox: decisions and drafted messages, no real gateway call or payment link.
+- No Sarvam AI key → rule + `ambiguous` classification and fixed English/Hinglish templates.
+- No webhook secret → signature checks are skipped (the endpoint stays deduped and rate-limited).
 
----
-
-## Differentiation
-
-| Tool | Limitation |
-|---|---|
-| Chargebee Revive / Retain | Locked to Chargebee's billing platform |
-| Stripe Smart Retries | Black-box, no audit trail, no Indic-language support |
-| Churn Buster / ChurnKey | US-centric SaaS, not built for Indian payment failure patterns |
-| Credgenics | Enterprise-grade, expensive, overkill for SME recovery |
-| **AIPunarartha** | Narrow, transparent, native to the payment gateway, every decision audited, Hinglish messaging via Indic-language LLM |
+**The dashboard.** A single dark-theme Streamlit app reads the same database: Home, Batch Summary (KPI cards, charts, drift scan), Records (filterable, PII masked), Record Detail (full classify → decide → act chain), Review Queue (human approvals), and Exceptions (manual triage).
 
 ---
 
-## What's Next
+## Staying safe
 
-- **Real SMS/WhatsApp delivery** — replace simulated sends with actual Twilio/WhatsApp Business API
-- **LLM voice synthesis** — generate actual Hinglish voice notes for recovery calls
-- **A/B test retry timing** — measure real recovery rates per bucket and time-of-day, feed back into `action_rules.json`
-- **Promise-to-pay tracker** — lightweight B2B receivables flow for overdue invoices
+- **Small by design.** Not a card processor, not an agent, not a trained model — just a decision system reading two versioned JSON rule files plus an optional, cached, circuit-broken AI call.
+- **Bounded retries.** Per-bucket and global caps are enforced across *all* failures of the same order, so a repeat offender keeps losing budget until the engine goes quiet.
+- **Cooldowns and minimums.** A dunning cooldown pauses contact after the last attempt; tiny transactions are not chased.
+- **Opt-out respected.** An opted-out customer never receives a recovery action.
+- **Human gate.** With `AUTO_EXECUTE=false`, nothing is sent until an operator approves it from the dashboard.
+- **Degrades, never crashes.** Provider failures fall back gracefully — a 55/55 batch completed even with the AI failing every call.
+- **Input hygiene and PII.** Amounts are validated, free text is cleaned, and phone/email are masked everywhere except action execution.
+- **Rate limited.** A per-IP limiter guards the ingest endpoints, so bogus events cannot rack up AI calls or fill the database.
+- **Observable.** Rotating logs under `logs/`, an audit trail for every decision, and a dashboard drift scan that warns when a failure bucket shifts beyond a threshold.
+- **Honest numbers.** Recovered amounts on the dashboard are simulated probabilities, not settlements.
+- **Known limits.** Single-user prototype, SQLite storage, drift reporting only (no alerting), and manual live-webhook registration.
+- **Credits.** Original code, generated data, and rules. The only external integrations are **Razorpay** (payment gateway/webhooks) and **Sarvam AI** (Indic-language model) — both optional and both fully working in sandbox/fallback mode when no keys are present.

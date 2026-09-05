@@ -1,0 +1,76 @@
+{
+  "_comment": "Maps gateway failure codes and common raw decline strings to classification buckets. Keys are lowercased before lookup.",
+  "rules": {
+    "insufficient_funds": {
+      "codes": [
+        "insufficient_funds",
+        "your account has insufficient balance",
+        "not enough balance to complete this transaction",
+        "insufficient funds for the transaction",
+        "Not enough balance",
+        "amount_not_supported",
+        "EC_DECLINE_2059",
+        "EC_DECLINE_2058"
+      ],
+      "description": "Customer doesn't have enough money in the account."
+    },
+    "card_expired": {
+      "codes": [
+        "expired_card",
+        "your card has expired",
+        "card expiry date is invalid",
+        "expired card",
+        "Card expired",
+        "invalid_card_expiry",
+        "EC_DECLINE_2001",
+        "EC_DECLINE_2054"
+      ],
+      "description": "Card has passed its expiry date."
+    },
+    "bank_timeout": {
+      "codes": [
+        "bank_timeout",
+        "bank server did not respond in time",
+        "payment gateway timed out",
+        "transaction timed out - please try again",
+        "gateway_timeout",
+        "timed_out",
+        "do_not_honor",
+        "issuer_unavailable",
+        "EC_DECLINE_2049",
+        "EC_DECLINE_2050"
+      ],
+      "description": "Bank didn't respond in time / was unavailable."
+    },
+    "3ds_failed": {
+      "codes": [
+        "authentication_failed",
+        "3d secure authentication failed",
+        "cardholder could not complete authentication",
+        "authentication failed at issuing bank",
+        "3d authentication failed",
+        "EC_DECLINE_2036",
+        "EC_DECLINE_2037",
+        "EC_DECLINE_2038"
+      ],
+      "description": "3D Secure authentication failed or was rejected."
+    },
+    "generic_decline": {
+      "codes": [
+        "transaction declined by bank without reason",
+        "do_not_honor",
+        "generic_decline",
+        "transaction_denied",
+        "restricted_card",
+        "lost_card",
+        "stolen_card",
+        "suspected_fraud",
+        "EC_DECLINE_2004",
+        "EC_DECLINE_2012",
+        "EC_DECLINE_2026",
+        "EC_DECLINE_2045"
+      ],
+      "description": "Card was declined for a generic or unspecified reason."
+    }
+  }
+}

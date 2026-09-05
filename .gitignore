@@ -4,6 +4,7 @@ __pycache__/
 *.sqlite3
 .env
 .venv/
+.streamlit/
 venv/
 env/
 *.egg-info/
@@ -12,6 +13,7 @@ build/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+logs/
 *.log
 ngrok
 ngrok.exe
