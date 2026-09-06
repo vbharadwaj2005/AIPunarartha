@@ -1,11 +1,4 @@
 @echo off
-REM ============================================
-REM  AIPunarartha - one-command launcher
-REM  Starts the FastAPI backend and the dashboard
-REM  Requires: .venv created with uv venv --python 3.13
-REM  Run from the repo root, exactly as-is.
-REM ============================================
-
 set VENV_PY=%~dp0.venv\Scripts\python.exe
 
 echo [*] Starting AIPunarartha API on http://localhost:8000

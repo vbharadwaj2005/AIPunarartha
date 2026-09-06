@@ -1,19 +1,44 @@
+﻿# Python
 __pycache__/
 *.py[cod]
-*.db
-*.sqlite3
-.env
-.venv/
-.streamlit/
-venv/
-env/
+*.class
 *.egg-info/
 dist/
 build/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.env
+
+# Databases & local state
+*.db
+*.sqlite3
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Logs & temporary files
 logs/
 *.log
+tmp/
+
+# Binaries / tunnelers
 ngrok
 ngrok.exe
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System files
+.DS_Store
+Thumbs.db
