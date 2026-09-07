@@ -1,8 +1,6 @@
-# AIPunarartha: Revenue Recovery Engine
+# AIPunarartha: Revenue Recovery Engine - Razorpay Buildathon'26
 
-**Wealth regained** — a small system that watches failed payments, works out *why* each one failed, and decides a safe, explainable recovery action for it. Built around the "revenue recovery" track of an Indian fintech payments hackathon.
-
-**Quickstart:** double-click `start.bat` on Windows (or follow the steps below). The app runs fully even when `.env` has no API keys.
+**Punarartha** (punar = again, artha = wealth) = **wealth regained** — a small system that watches failed payments, works out *why* each one failed, and decides a safe, explainable recovery action to get back money that was lost.
 
 ---
 
