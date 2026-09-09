@@ -1,4 +1,4 @@
-"""AIPunarartha — single source of truth for navigation and the sidebar.
+"""AIArtha — single source of truth for navigation and the sidebar.
 
 `PAGE_SPECS` defines every view (icon, title, script path, URL slug, and
 description) exactly once. `build_pages()` feeds `st.navigation`, `sidebar()`

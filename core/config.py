@@ -12,7 +12,7 @@ class Settings:
     razorpay_key_secret: str = os.getenv("RAZORPAY_KEY_SECRET", "")
     razorpay_webhook_secret: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
     sarvam_api_key: str = os.getenv("SARVAM_API_KEY", "")
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./aipunarartha.db")
+    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./aiartha.db")
 
     auto_execute: bool = os.getenv("AUTO_EXECUTE", "true").lower() == "true"
     action_retry_attempts: int = int(os.getenv("ACTION_RETRY_ATTEMPTS", "2"))

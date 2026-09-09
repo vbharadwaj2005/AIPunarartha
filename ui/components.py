@@ -1,4 +1,4 @@
-"""AIPunarartha — shared UI builders used by every view.
+"""AIArtha — shared UI builders used by every view.
 
 Everything renders from the `as-*` classes defined in `ui/styles.py`, so the
 whole dashboard is one design language. Only helpers that are actually used
@@ -15,7 +15,7 @@ def html(markup: str) -> None:
     st.markdown(markup, unsafe_allow_html=True)
 
 
-def sidebar_brand(title: str = "AIPunarartha", subtitle: str = "Revenue recovery",
+def sidebar_brand(title: str = "AIArtha", subtitle: str = "Revenue recovery",
                   glyph: str = "\u20b9") -> None:
     """Logo tile + app name pinned to the top of the sidebar on every page."""
     html(

@@ -1,6 +1,6 @@
-# AIPunarartha - Razorpay Buildathon'26
+# AIArtha - Razorpay Buildathon'26
 
-**Punarartha** (punar = again, artha = wealth) = **wealth regained** — a small system that watches failed payments, works out *why* each one failed, and decides a safe, explainable recovery action to get back money that was lost.
+**AIArtha** (arthā = wealth) = **AI-driven wealth recovery** — a small system that watches failed payments, works out *why* each one failed, and decides a safe, explainable recovery action to get back money that was lost.
 
 ---
 

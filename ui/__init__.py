@@ -1,4 +1,4 @@
-"""AIPunarartha — shared dashboard UI.
+"""AIArtha — shared dashboard UI.
 
 `ui/styles.py` holds the single global stylesheet, `ui/components.py` the
 single set of shared builders, and `ui/nav.py` the one navigation definition

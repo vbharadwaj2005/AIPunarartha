@@ -1,4 +1,4 @@
-"""AIPunarartha — the single global stylesheet and theme injector.
+"""AIArtha — the single global stylesheet and theme injector.
 
 One canvas, one vocabulary: monochrome-on-black IBM Plex. Everything on
 screen — custom HTML cards, Streamlit widgets, plotly figures — is styled

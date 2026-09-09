@@ -24,7 +24,7 @@ def _configure_logging():
     console.setFormatter(formatter)
 
     file_handler = RotatingFileHandler(
-        LOG_DIR / "aipunarartha.log",
+        LOG_DIR / "aiartha.log",
         maxBytes=2 * 1024 * 1024,
         backupCount=3,
         encoding="utf-8",
@@ -40,7 +40,7 @@ def _configure_logging():
 _configure_logging()
 
 app = FastAPI(
-    title="AIPunarartha",
+    title="AIArtha",
     description="AI revenue recovery - detect, classify and recover failed payments",
     version="0.2.0",
 )
@@ -68,4 +68,4 @@ def on_startup():
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "aipunarartha", "version": "0.2.0"}
+    return {"status": "ok", "service": "aiartha", "version": "0.2.0"}

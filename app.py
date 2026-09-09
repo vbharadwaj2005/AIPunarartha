@@ -1,4 +1,4 @@
-"""AIPunarartha — dashboard entry point.
+"""AIArtha — dashboard entry point.
 
 Registers the views with `st.navigation` (so `st.switch_page` can reach the
 `ui/` scripts), draws the single branded sidebar once, then runs the current
@@ -18,7 +18,7 @@ from ui.styles import init_theme  # noqa: E402
 from ui.nav import build_pages, sidebar  # noqa: E402
 
 st.set_page_config(
-    page_title="AIPunarartha — Revenue Recovery",
+    page_title="AIArtha — Revenue Recovery",
     page_icon="₹",
     layout="wide",
     initial_sidebar_state="expanded",
